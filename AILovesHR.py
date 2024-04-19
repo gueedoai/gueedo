@@ -19,6 +19,11 @@ genai.configure(api_key=os.getenv(google_key))
 from googletrans import Translator
 from langdetect import detect
 
+from cloudpathlib import CloudPath
+
+cp = CloudPath("s3://gueedodb/data/English/")
+cp.download_to(os.getcwd()+"/data/")
+
 def translate_german_to_english(text):
     translator = Translator()
     translation = translator.translate(text, src='de', dest='en')
@@ -112,7 +117,7 @@ def user_input(user_question):
 
 def main():
     
-    pdf_docs = 'C:/Users/Administrator/Documents/data/'
+    pdf_docs = os.getcwd()+"/data/"
     raw_text = get_pdf_text(pdf_docs)
     text_chunks = get_text_chunks(raw_text)
     get_vector_store(text_chunks)
