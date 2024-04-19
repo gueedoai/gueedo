@@ -16,6 +16,32 @@ os.getenv("GOOGLE_API_KEY")
 google_key = 'AIzaSyA0e2ZFuHPlXhrQeKI7Lo0mt7GU07V29Pg'
 genai.configure(api_key=os.getenv(google_key))
 
+from googletrans import Translator
+from langdetect import detect
+
+def translate_german_to_english(text):
+    translator = Translator()
+    translation = translator.translate(text, src='de', dest='en')
+    return translation.text
+
+def translate_english_to_german(text):
+    translator = Translator()
+    translation = translator.translate(text, src='en', dest='de')
+    return translation.text
+
+def is_german(text):
+    try:
+        # Attempt to detect the language of the text
+        language = detect(text)
+        # Check if the detected language is German
+        if language == "de":
+            return True
+        else:
+            return False
+    except:
+        # If an error occurs during language detection, return False
+        return False
+
 def get_pdf_text(data_path):
     pdf_files = [os.path.join(data_path, file) for file in os.listdir(data_path) if file.endswith('.pdf')]
     all_texts = ''
@@ -55,9 +81,16 @@ def get_conversational_chain():
     return chain
 
 def user_input(user_question):
+    lang = ''
+    if is_german(user_question):
+
+        user_question = translate_german_to_english(user_question)
+        lang = 'de'
+    
     embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001",google_api_key=google_key)
     
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+
 
     docs = new_db.similarity_search(user_question)
 
@@ -67,9 +100,15 @@ def user_input(user_question):
     response = chain(
         {"input_documents":docs, "question": user_question}
         , return_only_outputs=True)
+    
+    reply = response["output_text"]
+    if lang == 'de':
+   
+        reply = translate_english_to_german(reply)
+
 
     #print(response)
-    st.write("Reply: ", response["output_text"])
+    st.write("Reply: ", reply)
 
 def main():
     
@@ -83,7 +122,7 @@ def main():
     st.markdown("This AI chatbot is designed to assist with human resources (HR) related queries. It is programmed to provide responses and support for various topics and inquiries pertaining to HR functions, policies, procedures, and employee-related matters. Users can interact with the chatbot to seek information, guidance, and solutions regarding recruitment, onboarding, employee benefits, performance management, HR policies, and other relevant areas within the HR domain. The chatbot aims to streamline HR processes, enhance user experience, and provide timely assistance to employees and HR professionals alike.")
 
     user_question = st.text_input("Ask a Question")
-
+    
     
     if user_question:
         user_input(user_question)
