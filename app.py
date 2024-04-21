@@ -16,7 +16,7 @@ from cloudpathlib import CloudPath
 load_dotenv()
 os.getenv("GOOGLE_API_KEY")
 
-google_key = 'AIzaSyA0e2ZFuHPlXhrQeKI7Lo0mt7GU07V29Pg'
+google_key = 'AIzaSyBh0mzTjWLYpFQ1bLjcEWRvKPwkfkW1ko8'
 genai.configure(api_key=os.getenv(google_key))
 
 cp = CloudPath("s3://gueedodb/data/English/")
